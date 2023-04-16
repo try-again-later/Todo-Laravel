@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\RegistrationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,9 +15,19 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', fn() => view('home'))->name('home');
-Route::get('todos', fn() => view('todos'))->name('todos');
-Route::get('users', fn() => view('users'))->name('users');
-Route::get('login', fn() => view('login'))->name('login');
-Route::get('register', fn() => view('register'))->name('register');
-Route::post('logout', fn() => redirect()->route('home'))->name('logout');
+Route::view('/', 'home')->name('home');
+
+Route::middleware('guest')->group(function () {
+    Route::view('login', 'login')->name('login');
+    Route::view('register', 'register')->name('register');
+
+    Route::post('login', [LoginController::class, 'store'])->name('login.store');
+    Route::post('register', [RegistrationController::class, 'store'])->name('register.store');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::view('todos', 'todos')->name('todos');
+    Route::view('users', 'users')->name('users');
+
+    Route::delete('logout', [LoginController::class, 'delete'])->name('logout');
+});

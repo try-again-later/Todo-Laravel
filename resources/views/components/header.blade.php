@@ -19,6 +19,7 @@
                 @auth
                     <form action="{{ route('logout') }}" method="POST" class="d-inline-block">
                         @csrf
+                        @method('delete')
                         <button type="submit" class="btn btn-warning">Выйти</button>
                     </form>
                 @endauth
