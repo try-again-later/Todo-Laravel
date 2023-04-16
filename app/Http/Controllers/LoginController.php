@@ -15,6 +15,7 @@ class LoginController extends Controller
 
         if (Auth::attempt($validatedCredentials, remember: isset($validatedCredentials['remember_me']))) {
             $request->session()->regenerate();
+
             return redirect()->route('home');
         }
 

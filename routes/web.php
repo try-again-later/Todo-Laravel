@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\ImageController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegistrationController;
+use App\Http\Controllers\TodoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -30,4 +32,11 @@ Route::middleware('auth')->group(function () {
     Route::view('users', 'users')->name('users');
 
     Route::delete('logout', [LoginController::class, 'delete'])->name('logout');
+
+    Route::post('todos', [TodoController::class, 'store'])->name('todos.store');
+
+    Route::middleware('can:show,todo')->group(function () {
+        Route::get('images/{todo}', [ImageController::class, 'showImage'])->name('image.show');
+        Route::get('thumbnails/{todo}', [ImageController::class, 'showThumbnail'])->name('thumbnail.show');
+    });
 });

@@ -8,7 +8,7 @@
 
         <div class="mb-3">
             <label for="email-input" class="form-label">Почта</label>
-            <input type="email" id="email-input" class="form-control" name="email" value="{{ old('email') }}">
+            <input type="email" id="email-input" class="form-control" name="email" required value="{{ old('email') }}">
             @error('email')
                 <div class="text-danger">{{ $message }}</div>
             @enderror
@@ -16,7 +16,7 @@
 
         <div class="mb-3">
             <label for="password-input" class="form-label">Пароль</label>
-            <input type="password" id="password-input" class="form-control" name="password">
+            <input type="password" id="password-input" class="form-control" name="password" required>
         </div>
 
         <div class="mb-3">
