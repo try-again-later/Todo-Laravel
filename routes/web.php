@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', fn() => view('home'))->name('home');
+Route::get('todos', fn() => view('todos'))->name('todos');
+Route::get('users', fn() => view('users'))->name('users');
+Route::get('login', fn() => view('login'))->name('login');
+Route::get('register', fn() => view('register'))->name('register');
+Route::post('logout', fn() => redirect()->route('home'))->name('logout');

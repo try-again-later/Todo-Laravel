@@ -4,15 +4,26 @@
 git clone https://github.com/try-again-later/Todo-Laravel
 cd Todo-Laravel
 
-cp .env.example .env
-docker-compose -f ./docker/docker-compose.yml --env-file ./.env up -d --build app webserver database
-
+# build frontend assests
 docker-compose \
     -f ./docker/docker-compose.yml \
-    --env-file ./.env run \
-    --rm npm "npm i && npm run build"
+    --env-file ./.env \
+    run --rm npm "npm i && npm run build"
 
-docker-compose -f ./docker/docker-compose.yml --env-file ./.env exec -it app bash
+# start backend services
+cp .env.example .env
+docker-compose \
+    -f ./docker/docker-compose.yml \
+    --env-file ./.env \
+    up -d --build app webserver database
+
+
+# install backend dependencies, run migrations
+docker-compose \
+    -f ./docker/docker-compose.yml \
+    --env-file ./.env \
+    exec -it app bash
+
 composer install
 php artisan key:generate
 php artisan migrate:fresh
