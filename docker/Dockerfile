@@ -8,7 +8,7 @@ ARG app_env=production
 RUN \
     apt-get update && \
     apt-get install -y zip unzip curl git libpq-dev && \
-    docker-php-ext-install pdo_pgsql opcache
+    docker-php-ext-install pdo_pgsql opcache bcmath
 
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 
