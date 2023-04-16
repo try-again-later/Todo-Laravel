@@ -30,5 +30,15 @@ services:
         volumes:
             - postgres-data:/var/lib/postgresql/data
 
+    npm:
+        build:
+            context: ..
+            dockerfile: ./docker/Dockerfile.node
+            args:
+                uid: $UID
+                gid: $GID
+        volumes:
+            - ../:/var/www/
+
 volumes:
     postgres-data:

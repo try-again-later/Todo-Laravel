@@ -5,7 +5,12 @@ git clone https://github.com/try-again-later/Todo-Laravel
 cd Todo-Laravel
 
 cp .env.example .env
-docker-compose -f ./docker/docker-compose.yml --env-file ./.env up -d --build
+docker-compose -f ./docker/docker-compose.yml --env-file ./.env up -d --build app webserver database
+
+docker-compose \
+    -f ./docker/docker-compose.yml \
+    --env-file ./.env run \
+    --rm npm "npm i && npm run build"
 
 docker-compose -f ./docker/docker-compose.yml --env-file ./.env exec -it app bash
 composer install
