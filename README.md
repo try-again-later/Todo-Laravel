@@ -1,3 +1,5 @@
+Задеплоенная версия доступна здесь: [todo-laravel.194-87-252-222.nip.io](http://todo-laravel.194-87-252-222.nip.io/).
+
 ```sh
 git clone https://github.com/try-again-later/Todo-Laravel
 cd Todo-Laravel
