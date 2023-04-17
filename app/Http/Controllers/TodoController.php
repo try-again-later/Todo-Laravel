@@ -8,15 +8,31 @@ use App\Http\Resources\TodoResource;
 use App\Models\Todo;
 use App\Services\Interfaces\ImagesRepositoryInterface;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 class TodoController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return TodoResource::collection(Auth::user()->todos()->with('tags')->orderByDesc('id')->get())->response();
+        if ($request->has('search')) {
+            return TodoResource::collection(Auth::user()
+                ->todos()
+                ->with('tags')
+                ->orderByDesc('id')
+                ->where('content', 'like', "%{$request->get('search')}%")
+                ->get()
+            )->response();
+        }
+
+        return TodoResource::collection(Auth::user()
+            ->todos()
+            ->with('tags')
+            ->orderByDesc('id')
+            ->get()
+        )->response();
     }
 
     public function store(

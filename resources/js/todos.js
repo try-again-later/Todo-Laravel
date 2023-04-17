@@ -21,6 +21,7 @@ todoSubmitForm.addEventListener('submit', async function (event) {
         },
     });
 
+    await downloadAllTodos();
     await refreshTodos();
 });
 
@@ -28,8 +29,13 @@ const todoTemplate = document.getElementById('todo-template');
 const tagTemplate = document.getElementById('tag-template');
 const todosContainer = document.getElementById('todos-container');
 
-let todos = new Map();
+let todosMap = new Map();
+let todos = [];
 let editedTodo = null;
+
+async function downloadAllTodos() {
+    todos = (await axios.get('/todos/all')).data;
+}
 
 const todoEditModal = document.getElementById('todo-edit-modal');
 todoEditModal.addEventListener('shown.bs.modal', function () {
@@ -64,16 +70,15 @@ todoEditModal.addEventListener('shown.bs.modal', function () {
         });
 
         closeButton.click();
+        await downloadAllTodos();
         await refreshTodos();
     });
 });
 
 async function refreshTodos() {
-    const response = await axios.get('/todos/all');
-
     todosContainer.textContent = '';
-    for (const todo of response.data) {
-        todos.set(todo.id, todo);
+    for (const todo of todos) {
+        todosMap.set(todo.id, todo);
 
         const todoElement = todoTemplate.content.cloneNode(true);
 
@@ -100,6 +105,7 @@ async function refreshTodos() {
             try {
                 this.disabled = true;
                 await axios.patch(`/todos/${todo.id}`, {image: null});
+                await downloadAllTodos();
                 await refreshTodos();
             } finally {
                 this.disabled = false;
@@ -121,12 +127,13 @@ async function refreshTodos() {
         const deleteButton = todoElement.querySelector('[data-todo-delete-button]');
         deleteButton.addEventListener('click', async function () {
             await axios.delete(`/todos/${todo.id}`);
+            await downloadAllTodos();
             await refreshTodos();
         });
 
         const editButton = todoElement.querySelector('[data-todo-edit-button]');
         editButton.addEventListener('click', function () {
-            editedTodo = todos.get(todo.id);
+            editedTodo = todosMap.get(todo.id);
         });
 
         todoElement.querySelector('[data-add-tag-form]').addEventListener('submit', async function (event) {
@@ -136,6 +143,7 @@ async function refreshTodos() {
             formData.append('name', event.currentTarget.name.value);
 
             await axios.post(`/todos/${todo.id}/tags`, formData);
+            await downloadAllTodos();
             await refreshTodos();
         });
 
@@ -148,6 +156,7 @@ async function refreshTodos() {
                 event.preventDefault();
 
                 await axios.delete(`/todos/${todo.id}/tags`, {data: {name: tag.name}});
+                await downloadAllTodos();
                 await refreshTodos();
             });
 
@@ -159,4 +168,22 @@ async function refreshTodos() {
     }
 }
 
-refreshTodos();
+const todoSearchForm = document.getElementById('search-form');
+
+todoSearchForm.addEventListener('submit', async function (event) {
+    event.preventDefault();
+
+    todos = (await axios.get('/todos/all', {params: {search: event.currentTarget.search.value}})).data;
+    await refreshTodos();
+});
+
+todoSearchForm.querySelector('[data-show-all-todos]').addEventListener('click', async function () {
+    todoSearchForm.querySelector('input[type=text]').value = '';
+    await downloadAllTodos();
+    await refreshTodos();
+});
+
+(async () => {
+    await downloadAllTodos();
+    await refreshTodos();
+})();

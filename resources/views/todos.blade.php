@@ -16,6 +16,14 @@
         <button type="submit" class="btn btn-primary mt-2">Создать</button>
     </form>
 
+    <div class="mb-3 col-lg-6 mx-auto mt-4">
+        <form class="input-group" id="search-form">
+            <input type="text" class="form-control" name="search" required>
+            <button class="btn btn-outline-secondary" type="submit">Поиск</button>
+            <button class="btn btn-outline-secondary" type="button" data-show-all-todos>Показать все</button>
+        </form>
+    </div>
+
     <div class="col-lg-6 mx-auto mt-4" id="todos-container"></div>
 
     <template id="tag-template">
