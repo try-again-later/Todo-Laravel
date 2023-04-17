@@ -31,10 +31,15 @@ const todosContainer = document.getElementById('todos-container');
 
 let todosMap = new Map();
 let todos = [];
+let tags = [];
 let editedTodo = null;
 
 async function downloadAllTodos() {
     todos = (await axios.get('/todos/all')).data;
+}
+
+async function downloadTags() {
+    tags = (await axios.get('/tags')).data;
 }
 
 const todoEditModal = document.getElementById('todo-edit-modal');
@@ -145,6 +150,8 @@ async function refreshTodos() {
             await axios.post(`/todos/${todo.id}/tags`, formData);
             await downloadAllTodos();
             await refreshTodos();
+            await downloadTags();
+            refreshGlobalTagsList();
         });
 
         const tagsListElement = todoElement.querySelector('[data-tags-list]');
@@ -183,7 +190,41 @@ todoSearchForm.querySelector('[data-show-all-todos]').addEventListener('click', 
     await refreshTodos();
 });
 
+const globalTagsList = document.getElementById('global-tags-list');
+
+function refreshGlobalTagsList() {
+    globalTagsList.textContent = '';
+
+    for (const tag of tags) {
+        const tagElement = tagTemplate.content.cloneNode(true);
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = true;
+        checkbox.style.width = '1.5rem';
+        checkbox.style.height = '1.5rem';
+        tagElement.querySelector('.badge').appendChild(checkbox);
+
+        tagElement.querySelector('[data-tag-name]').textContent = tag.name;
+
+        tagElement.querySelector('form').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            await axios.delete('/tags', {data: {name: tag.name}});
+            await downloadTags();
+            refreshGlobalTagsList();
+            await downloadAllTodos();
+            await refreshTodos();
+        });
+
+        globalTagsList.appendChild(tagElement)
+        globalTagsList.appendChild(document.createTextNode(' '));
+    }
+}
+
 (async () => {
     await downloadAllTodos();
     await refreshTodos();
+    await downloadTags();
+    refreshGlobalTagsList();
 })();

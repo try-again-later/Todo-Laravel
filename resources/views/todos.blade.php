@@ -24,7 +24,15 @@
         </form>
     </div>
 
-    <div class="col-lg-6 mx-auto mt-4" id="todos-container"></div>
+    <div class="mt-2 col-lg-6 mx-auto mt-4">
+        <h4>Теги</h4>
+        <div id="global-tags-list"></div>
+    </div>
+
+    <div class="col-lg-6 mx-auto mt-4">
+        <h4>Список дел</h4>
+        <div id="todos-container"></div>
+    </div>
 
     <template id="tag-template">
         <span class="badge text-bg-secondary">
