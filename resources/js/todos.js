@@ -25,6 +25,7 @@ todoSubmitForm.addEventListener('submit', async function (event) {
 });
 
 const todoTemplate = document.getElementById('todo-template');
+const tagTemplate = document.getElementById('tag-template');
 const todosContainer = document.getElementById('todos-container');
 
 let todos = new Map();
@@ -56,7 +57,7 @@ todoEditModal.addEventListener('shown.bs.modal', function () {
             formData.append('image', event.currentTarget.image.files[0]);
         }
 
-        const response = await axios.post(`/todos/${editedTodo.id}`, formData, {
+        await axios.post(`/todos/${editedTodo.id}`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -127,6 +128,32 @@ async function refreshTodos() {
         editButton.addEventListener('click', function () {
             editedTodo = todos.get(todo.id);
         });
+
+        todoElement.querySelector('[data-add-tag-form]').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const formData = new FormData();
+            formData.append('name', event.currentTarget.name.value);
+
+            await axios.post(`/todos/${todo.id}/tags`, formData);
+            await refreshTodos();
+        });
+
+        const tagsListElement = todoElement.querySelector('[data-tags-list]');
+        for (const tag of todo.tags) {
+            const tagElement = tagTemplate.content.cloneNode(true);
+            tagElement.querySelector('[data-tag-name]').textContent = tag.name;
+
+            tagElement.querySelector('form').addEventListener('submit', async function (event) {
+                event.preventDefault();
+
+                await axios.delete(`/todos/${todo.id}/tags`, {data: {name: tag.name}});
+                await refreshTodos();
+            });
+
+            tagsListElement.appendChild(tagElement)
+            tagsListElement.appendChild(document.createTextNode(' '));
+        }
 
         todosContainer.appendChild(todoElement);
     }

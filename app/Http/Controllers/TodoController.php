@@ -16,7 +16,7 @@ class TodoController extends Controller
 {
     public function index(): JsonResponse
     {
-        return TodoResource::collection(Auth::user()->todos()->orderByDesc('id')->get())->response();
+        return TodoResource::collection(Auth::user()->todos()->with('tags')->orderByDesc('id')->get())->response();
     }
 
     public function store(

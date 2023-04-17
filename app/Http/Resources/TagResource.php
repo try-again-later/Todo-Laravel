@@ -2,14 +2,14 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Todo;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin Todo
+ * @mixin Tag
  */
-class TodoResource extends JsonResource
+class TagResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -19,11 +19,7 @@ class TodoResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => strval($this->id),
-            'content' => $this->content,
-            'done' => $this->done,
-            'has_image' => $this->has_image,
-            'tags' => TagResource::collection($this->whenLoaded('tags')),
+            'name' => $this->name,
         ];
     }
 }

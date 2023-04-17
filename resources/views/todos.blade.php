@@ -18,22 +18,38 @@
 
     <div class="col-lg-6 mx-auto mt-4" id="todos-container"></div>
 
+    <template id="tag-template">
+        <span class="badge text-bg-secondary">
+            <span data-tag-name></span>
+            <form class="d-inline-block"><button class="btn btn-danger btn-sm">Удалить</button></form>
+        </span>
+    </template>
+
     <template id="todo-template">
-        <article class="d-flex mt-4 p-2 border rounded">
-            <div class="me-2">
-                <input type="checkbox" name="done" style="width: 2rem; height: 2rem;">
+        <article class="mt-4 p-2 border rounded">
+            <div class="d-flex">
+                <div class="me-2">
+                    <input type="checkbox" name="done" style="width: 2rem; height: 2rem;">
+                </div>
+                <p data-content class="me-auto"></p>
+                <div class="">
+                    <a href="#" data-image-link class="d-block">
+                        <img data-image src="" alt="Todo image" style="display: none;">
+                    </a>
+                    <button type="button" class="btn btn-link link-danger d-block mx-auto mt-2 d-none" data-delete-image-button>Удалить картинку</button>
+                </div>
+                <div class="ms-2">
+                    <button data-todo-delete-button class="d-block btn btn-danger">Удалить</button>
+                    <button data-todo-edit-button class="d-block mt-2 btn btn-secondary" data-bs-toggle="modal" data-bs-target="#todo-edit-modal">Изменить</button>
+                </div>
             </div>
-            <p data-content class="me-auto"></p>
-            <div class="">
-                <a href="#" data-image-link class="d-block">
-                    <img data-image src="" alt="Todo image" style="display: none;">
-                </a>
-                <button type="button" class="btn btn-link link-danger d-block mx-auto mt-2 d-none" data-delete-image-button>Удалить картинку</button>
-            </div>
-            <div class="ms-2">
-                <button data-todo-delete-button class="d-block btn btn-danger">Удалить</button>
-                <button data-todo-edit-button class="d-block mt-2 btn btn-secondary" data-bs-toggle="modal" data-bs-target="#todo-edit-modal">Изменить</button>
-            </div>
+            <form data-add-tag-form class="mt-2">
+                <div class="input-group">
+                    <input type="text" class="form-control" name="name">
+                    <button class="btn btn-outline-secondary" type="submit">Добавить тег</button>
+                </div>
+            </form>
+            <div data-tags-list class="mt-2"></div>
         </article>
     </template>
 

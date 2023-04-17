@@ -3,6 +3,7 @@
 use App\Http\Controllers\ImageController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegistrationController;
+use App\Http\Controllers\TagController;
 use App\Http\Controllers\TodoController;
 use Illuminate\Support\Facades\Route;
 
@@ -37,6 +38,12 @@ Route::middleware('auth')->group(function () {
     Route::get('todos/all', [TodoController::class, 'index'])->name('todos.index');
     Route::delete('todos/{todo}', [TodoController::class, 'delete'])->name('todos.delete');
     Route::patch('todos/{todo}', [TodoController::class, 'update'])->middleware('can:update,todo')->name('todos.update');
+
+    Route::get('tags', [TagController::class, 'index'])->name('tags.index');
+
+    Route::post('todos/{todo}/tags', [TagController::class, 'store'])->middleware('can:update,todo');
+    Route::delete('todos/{todo}/tags', [TagController::class, 'deleteFromTodo'])->middleware('can:update,todo');
+    Route::delete('tags', [TagController::class, 'deleteEntirely']);
 
     Route::middleware('can:show,todo')->group(function () {
         Route::get('images/{todo}', [ImageController::class, 'showImage'])->name('image.show');
