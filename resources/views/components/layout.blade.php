@@ -1,5 +1,6 @@
 @props([
     'title' => null,
+    'scripts' => ['resources/js/app.js'],
 ])
 
 <!DOCTYPE html>
@@ -11,7 +12,7 @@
             Список дел
             @isset($title) &mdash; {{ $title }} @endisset
         </title>
-        @vite(['resources/css/app.scss', 'resources/js/app.js'])
+        @vite(['resources/css/app.scss', ...$scripts])
     </head>
     <body>
         {{ $slot }}

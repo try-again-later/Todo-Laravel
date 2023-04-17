@@ -35,7 +35,7 @@ Route::middleware('auth')->group(function () {
 
     Route::post('todos', [TodoController::class, 'store'])->name('todos.store');
     Route::get('todos/all', [TodoController::class, 'index'])->name('todos.index');
-    Route::delete('todos/{id}', [TodoController::class, 'delete'])->name('todos.delete');
+    Route::delete('todos/{todo}', [TodoController::class, 'delete'])->name('todos.delete');
     Route::patch('todos/{todo}', [TodoController::class, 'update'])->middleware('can:update,todo')->name('todos.update');
 
     Route::middleware('can:show,todo')->group(function () {

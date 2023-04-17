@@ -16,7 +16,7 @@ class TodoController extends Controller
 {
     public function index(): JsonResponse
     {
-        return TodoResource::collection(Auth::user()->todos)->response();
+        return TodoResource::collection(Auth::user()->todos()->orderByDesc('id')->get())->response();
     }
 
     public function store(
@@ -60,7 +60,7 @@ class TodoController extends Controller
         $validatedData = $request->validated();
 
         $todo = DB::transaction(
-            function () use ($request, $validatedData, $todo, $imagesRepository) {
+            function () use ($request, $validatedData, $todo, $imagesRepository): Todo {
                 if ($request->has('done')) {
                     $todo->done = $validatedData['done'];
                 }
@@ -81,14 +81,18 @@ class TodoController extends Controller
                         }
                     }
                 }
+
+                $todo->save();
+                return $todo;
             }
         );
 
         return TodoResource::make($todo)->response();
     }
 
-    public function delete(Todo $todo)
+    public function delete(Todo $todo, ImagesRepositoryInterface $imagesRepository)
     {
         $todo->delete();
+        $imagesRepository->delete(strval($todo->id));
     }
 }
