@@ -3,66 +3,92 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\TodoStoreRequest;
+use App\Http\Requests\TodoUpdateRequest;
+use App\Http\Resources\TodoResource;
 use App\Models\Todo;
-use DB;
+use App\Services\Interfaces\ImagesRepositoryInterface;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use RuntimeException;
-use Storage;
 
 class TodoController extends Controller
 {
-    public function store(TodoStoreRequest $request)
+    public function index(): JsonResponse
     {
+        return TodoResource::collection(Auth::user()->todos)->response();
+    }
+
+    public function store(
+        TodoStoreRequest $request,
+        ImagesRepositoryInterface $imagesRepository
+    ): JsonResponse {
         $validatedData = $request->validated();
 
-        DB::transaction(function () use ($validatedData, $request) {
-            $todo = Todo::create([
-                'content' => $validatedData['content'],
-                'done' => false,
-                'has_image' => isset($validatedData['image']),
-                'user_id' => $request->user()->id,
-            ]);
+        $todo = DB::transaction(
+            function () use ($validatedData, $request, $imagesRepository): Todo {
+                $todo = Todo::create([
+                    'content' => htmlspecialchars($validatedData['content']),
+                    'done' => false,
+                    'has_image' => isset($validatedData['image']),
+                    'user_id' => $request->user()->id,
+                ]);
 
-            if (! isset($validatedData['image'])) {
-                return;
+                if (! isset($validatedData['image'])) {
+                    return $todo;
+                }
+                if (is_array($request->file('image'))) {
+                    throw new RuntimeException('Only single image uploads are allowed');
+                }
+
+                if (! $imagesRepository->save(strval($todo->id), $request->file('image'))) {
+                    throw new RuntimeException('Error while saving images.');
+                }
+
+                return $todo;
             }
-            if (is_array($request->file('image'))) {
-                throw new RuntimeException('Only single image uploads are allowed');
+        );
+
+        return TodoResource::make($todo)->response();
+    }
+
+    public function update(
+        Todo $todo,
+        TodoUpdateRequest $request,
+        ImagesRepositoryInterface $imagesRepository
+    ): JsonResponse {
+        $validatedData = $request->validated();
+
+        $todo = DB::transaction(
+            function () use ($request, $validatedData, $todo, $imagesRepository) {
+                if ($request->has('done')) {
+                    $todo->done = $validatedData['done'];
+                }
+                if ($request->has('content')) {
+                    $todo->content = htmlspecialchars($validatedData['content']);
+                }
+                if ($request->has('image')) {
+                    $todo->has_image = $validatedData['image'] !== null;
+
+                    if (is_null($validatedData['image'])) {
+                        $imagesRepository->delete(strval($todo->id));
+                    } else {
+                        if (is_array($request->file('image'))) {
+                            throw new RuntimeException('Only single image uploads are allowed');
+                        }
+                        if (! $imagesRepository->save(strval($todo->id), $request->file('image'))) {
+                            throw new RuntimeException('Error while saving images.');
+                        }
+                    }
+                }
             }
+        );
 
-            $fileName = $request->file('image')->getRealPath();
-            $imageMimeType = $request->file('image')->getMimeType();
+        return TodoResource::make($todo)->response();
+    }
 
-            if (! in_array($imageMimeType, ['image/jpeg', 'image/png'], strict: true)) {
-                throw new RuntimeException('Invalid image format.');
-            }
-            $image = match ($request->file('image')->getMimeType()) {
-                'image/jpeg' => imagecreatefromjpeg($fileName),
-                'image/png' => imagecreatefrompng($fileName),
-            };
-
-            ob_start();
-            imagejpeg($image);
-            $imageData = ob_get_contents();
-            ob_end_clean();
-
-            $thumbnail = imagecreatetruecolor(150, 150);
-            imagecopyresampled($thumbnail, $image, 0, 0, 0, 0, 150, 150, imagesx($image), imagesy($image));
-
-            ob_start();
-            imagejpeg($thumbnail);
-            $thumbnailData = ob_get_contents();
-            ob_end_clean();
-
-            $imageSaveResult = Storage::disk('images')->put(strval($todo->id), $imageData);
-            $thumbnailSaveResult = Storage::disk('thumbnails')->put(strval($todo->id), $thumbnailData);
-
-            if (! $imageSaveResult || ! $thumbnailSaveResult) {
-                Storage::disk('images')->delete(strval($todo->id));
-                Storage::disk('thumbnails')->delete(strval($todo->id));
-                throw new RuntimeException('Error while saving images.');
-            }
-        });
-
-        return redirect()->route('todos');
+    public function delete(Todo $todo)
+    {
+        $todo->delete();
     }
 }

@@ -34,6 +34,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('logout', [LoginController::class, 'delete'])->name('logout');
 
     Route::post('todos', [TodoController::class, 'store'])->name('todos.store');
+    Route::get('todos/all', [TodoController::class, 'index'])->name('todos.index');
+    Route::delete('todos/{id}', [TodoController::class, 'delete'])->name('todos.delete');
+    Route::patch('todos/{todo}', [TodoController::class, 'update'])->middleware('can:update,todo')->name('todos.update');
 
     Route::middleware('can:show,todo')->group(function () {
         Route::get('images/{todo}', [ImageController::class, 'showImage'])->name('image.show');
