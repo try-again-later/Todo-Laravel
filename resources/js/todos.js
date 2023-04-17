@@ -81,8 +81,24 @@ todoEditModal.addEventListener('shown.bs.modal', function () {
 });
 
 async function refreshTodos() {
+    let activeTags = [];
+    document.querySelectorAll('#global-tags-list .badge').forEach((badge) => {
+        const name = badge.querySelector('[data-tag-name]').textContent;
+        if (badge.querySelector('input[type=checkbox]').checked) {
+            activeTags.push(name);
+        }
+    });
+
     todosContainer.textContent = '';
+
+    todosIteration:
     for (const todo of todos) {
+        for (const tag of todo.tags) {
+            if (!activeTags.includes(tag.name)) {
+                continue todosIteration;
+            }
+        }
+
         todosMap.set(todo.id, todo);
 
         const todoElement = todoTemplate.content.cloneNode(true);
@@ -148,10 +164,10 @@ async function refreshTodos() {
             formData.append('name', event.currentTarget.name.value);
 
             await axios.post(`/todos/${todo.id}/tags`, formData);
-            await downloadAllTodos();
-            await refreshTodos();
             await downloadTags();
             refreshGlobalTagsList();
+            await downloadAllTodos();
+            await refreshTodos();
         });
 
         const tagsListElement = todoElement.querySelector('[data-tags-list]');
@@ -203,6 +219,11 @@ function refreshGlobalTagsList() {
         checkbox.checked = true;
         checkbox.style.width = '1.5rem';
         checkbox.style.height = '1.5rem';
+
+        checkbox.addEventListener('change', async function () {
+            await refreshTodos();
+        });
+
         tagElement.querySelector('.badge').appendChild(checkbox);
 
         tagElement.querySelector('[data-tag-name]').textContent = tag.name;
@@ -223,8 +244,8 @@ function refreshGlobalTagsList() {
 }
 
 (async () => {
-    await downloadAllTodos();
-    await refreshTodos();
     await downloadTags();
     refreshGlobalTagsList();
+    await downloadAllTodos();
+    await refreshTodos();
 })();
